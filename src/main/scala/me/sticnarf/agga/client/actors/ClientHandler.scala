@@ -1,20 +1,22 @@
 package me.sticnarf.agga.client.actors
 
-import java.nio.charset.Charset
-
-import akka.actor.{Actor, ActorLogging, ActorRef}
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.io.Tcp
 import akka.util.ByteString
-import me.sticnarf.agga.client.messages.TcpData
 
-class ClientHandler(val conn: Int, val manager: ActorRef) extends Actor with ActorLogging {
+class ClientHandler(val conn: Int, val remote: ActorRef) extends Actor with ActorLogging {
+  val segmenter = context.actorOf(Props(classOf[Segmenter], conn))
 
   import Tcp._
 
   override def receive: Receive = {
     case Received(data) =>
       log.info("Received {} bytes, sender: {}", data.length, sender())
-      manager ! TcpData(conn, data)
+      segmenter ! data
+
+    case data: ByteString =>
+      log.info("Write {} bytes", data.length)
+      remote ! Write(data)
 
     case PeerClosed => context stop self
   }

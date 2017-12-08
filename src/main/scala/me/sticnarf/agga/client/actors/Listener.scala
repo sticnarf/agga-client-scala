@@ -2,10 +2,11 @@ package me.sticnarf.agga.client.actors
 
 import java.net.InetSocketAddress
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import akka.actor.{Actor, ActorLogging, Props}
 import akka.io.{IO, Tcp}
 
-class Listener(val manager: ActorRef) extends Actor with ActorLogging {
+class Listener() extends Actor with ActorLogging {
+  val manager = context.actorSelection("/user/manager")
 
   import Tcp._
   import context.system
@@ -27,7 +28,9 @@ class Listener(val manager: ActorRef) extends Actor with ActorLogging {
       val conn = counter
       counter += 1
       val connection = sender()
-      val handler = context.actorOf(Props(classOf[ClientHandler], conn, manager))
+      val handler = context.actorOf(Props(classOf[ClientHandler], conn, connection))
+      val aggregator = context.actorOf(Props(classOf[Aggregator], handler))
       connection ! Register(handler)
+      manager ! (conn, aggregator)
   }
 }

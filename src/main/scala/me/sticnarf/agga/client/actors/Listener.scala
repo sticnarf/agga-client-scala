@@ -4,6 +4,7 @@ import java.net.InetSocketAddress
 
 import akka.actor.{Actor, ActorLogging, Props}
 import akka.io.{IO, Tcp}
+import me.sticnarf.agga.client.AggaConfig
 
 class Listener() extends Actor with ActorLogging {
   val manager = context.actorSelection("/user/manager")
@@ -11,7 +12,7 @@ class Listener() extends Actor with ActorLogging {
   import Tcp._
   import context.system
 
-  IO(Tcp) ! Bind(self, new InetSocketAddress("localhost", 8080))
+  IO(Tcp) ! Bind(self, AggaConfig.listenAddress)
 
   var counter = 1
 

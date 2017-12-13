@@ -18,6 +18,13 @@ class ClientHandler(val conn: Int, val remote: ActorRef) extends Actor with Acto
       log.info("Write {} bytes", data.length)
       remote ! Write(data)
 
-    case PeerClosed => context stop self
+    case "close" =>
+      log.info("Server closed")
+      remote ! Close
+
+    case c@PeerClosed =>
+      log.info("Connection closed")
+      segmenter ! c
+      context stop self
   }
 }

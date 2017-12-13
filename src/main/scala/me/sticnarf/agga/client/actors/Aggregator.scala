@@ -13,7 +13,11 @@ class Aggregator(val clientHandler: ActorRef) extends Actor {
 
   override def receive: Receive = {
     case s@ServerSegment(_, seq, data) =>
-      if (seq == currentSeq) {
+      if (seq == -1 && data.isEmpty) {
+        clientHandler ! "close"
+        context stop self
+      }
+      else if (seq == currentSeq) {
         clientHandler ! akka.util.ByteString(data.asReadOnlyByteBuffer())
         currentSeq += 1
 

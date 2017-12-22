@@ -26,7 +26,7 @@ class Manager(val key: String) extends Actor with ActorLogging {
     case ServerList(list) =>
       log.info("ServerList: {}", list)
       for (serverInfo <- list) {
-        val server = context.system.actorSelection(s"${serverInfo.address}/user/postman")
+        val server = context.system.actorSelection(s"akka.${serverInfo.address}/user/server")
         server ! Connect(key)
       }
 
